@@ -9,7 +9,8 @@ Be sure to check it out.
 
 ## Getting Started
 
-Include the library and off you go.
+### FlyOutMenu
+![FlyOutMenu](https://raw.githubusercontent.com/sharp3dges/animator_widgets/master/gifs/fly_out_menu.gif)
 
 #### Basic example
 ```dart
@@ -40,5 +41,5 @@ Include the library and off you go.
   }
 ```
 
-Full working Example can be found at the example tab.
+Full working Examples can be found at the example tab.
 If you like you can also download the example folder to see how this works
