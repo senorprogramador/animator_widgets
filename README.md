@@ -4,7 +4,7 @@ Provides awesome stylable animated widgets.
 
 __Please note that there is currently only one awesome widget: FlyOutMenu, but others will soon follow!__
 
-This project uses the [flutter_animator][https://pub.dev/packages/flutter_animator] project for it's animations.
+This project uses the [flutter_animator](https://pub.dev/packages/flutter_animator) project for it's animations.
 Be sure to check it out.
 
 ## Getting Started
