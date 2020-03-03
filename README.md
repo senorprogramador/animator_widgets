@@ -1,14 +1,44 @@
 # animator_widgets
 
-A new Flutter package project.
+Provides awesome stylable animated widgets.
+
+__Please note that there is currently only one awesome widget: FlyOutMenu, but others will soon follow!__
+
+This project uses the [flutter_animator][https://pub.dev/packages/flutter_animator] project for it's animations.
+Be sure to check it out.
 
 ## Getting Started
 
-This project is a starting point for a Dart
-[package](https://flutter.dev/developing-packages/),
-a library module containing code that can be shared easily across
-multiple Flutter or Dart projects.
+Include the library and off you go.
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+#### Basic example
+```dart
+@override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Text(pressedItem != null
+            ? "Last pressed: $pressedItem"
+            : "No items pressed"),
+      ),
+      floatingActionButton: FlyOutMenu(
+        key: _flyoutMenuKey,
+        ///^-- use a global key to call _flyoutMenuKey.currentState.close() on buttonPress.
+        buttons: buttons,
+        ///^-- List<Widget> so you can add your own widgets and handle the press yourself.
+        animation: FlyOutAnimation.flipperCard,
+        ///^-- multiple fancy animations available.
+        defaultIcon: Icons.add,
+        ///^-- icon for standard (closed) state.
+        activeIcon: Icons.close,
+        ///^-- icon for active (open) state.
+      ),
+    );
+  }
+```
+
+Full working Example can be found at the example tab.
+If you like you can also download the example folder to see how this works
