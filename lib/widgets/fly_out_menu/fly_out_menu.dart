@@ -165,7 +165,8 @@ class FlyOutMenuState extends State<FlyOutMenu> with SingleAnimatorStateMixin {
           return GestureDetector(
             onTap: close,
             child: Container(
-              color: Colors.black.withAlpha(animation.get("overlayAlpha").value.toInt()),
+              color: Colors.black
+                  .withAlpha(animation.get("overlayAlpha").value.toInt()),
               width: screenSize.width,
               height: screenSize.height,
               child: child,
