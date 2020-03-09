@@ -29,24 +29,18 @@ import 'fly_out_menu.dart';
 
 class FlyOutMenuItem extends StatefulWidget {
   final int index;
-  final bool active;
-  final Widget button;
+  final Widget child;
   final FlyOutAnimation animation;
-  final AnimationStatusListener animationStatusListener;
-  final Duration offset;
-  final Duration duration;
   final double marginBottom;
+  final AnimationPreferences preferences;
 
   FlyOutMenuItem({
     Key key,
     @required this.index,
-    @required this.active,
-    @required this.button,
+    @required this.child,
     this.animation = FlyOutAnimation.flipperCard,
-    this.animationStatusListener,
-    this.offset = Duration.zero,
-    this.duration = const Duration(milliseconds: 500),
     this.marginBottom = 4.0,
+    this.preferences = const AnimationPreferences(),
   }) : super(key: key);
 
   @override
@@ -54,97 +48,52 @@ class FlyOutMenuItem extends StatefulWidget {
 }
 
 class FlyOutMenuItemState extends State<FlyOutMenuItem> {
-  bool _active = true;
+  final GlobalKey<InOutAnimationState> _key = GlobalKey<InOutAnimationState>();
 
-  @override
-  void initState() {
-    _active = widget.active;
-    super.initState();
+  void animateIn() {
+    _key.currentState.animateIn();
   }
 
-  close() {
-    setState(() {
-      _active = false;
-    });
+  void animateOut() {
+    _key.currentState.animateOut();
   }
 
-  Widget _renderAnimation() {
-    Widget child = Padding(
-      padding: EdgeInsets.only(bottom: widget.marginBottom),
-      child: widget.button,
-    );
+  AnimationDefinition _getInDefinition() {
+    final AnimationPreferences preferences = widget.preferences;
 
     switch (widget.animation) {
       case FlyOutAnimation.flipperCard:
-        return FlipInX(
+        return FlipInXAnimation(
           from:
               widget.index % 2 == 0 ? FlipInXOrigin.front : FlipInXOrigin.back,
           alignment: Alignment.topCenter,
-          offset: widget.offset,
-          duration: widget.duration,
-          animationStatusListener: widget.animationStatusListener,
-          child: child,
+          preferences: preferences,
         );
       case FlyOutAnimation.lightSpeed:
-        return LightSpeedIn(
-          offset: widget.offset,
-          duration: widget.duration,
-          animationStatusListener: widget.animationStatusListener,
-          child: child,
-        );
+        return LightSpeedInAnimation(preferences: preferences);
       case FlyOutAnimation.bounceIn:
-        return BounceIn(
-          offset: widget.offset,
-          duration: widget.duration,
-          animationStatusListener: widget.animationStatusListener,
-          child: child,
-        );
+        return BounceInAnimation(preferences: preferences);
       case FlyOutAnimation.fadeInUp:
-        return FadeInUp(
-          offset: widget.offset,
-          duration: widget.duration,
-          animationStatusListener: widget.animationStatusListener,
-          child: child,
-        );
+        return FadeInUpAnimation(preferences: preferences);
       case FlyOutAnimation.fadeInLeft:
-        return FadeInLeft(
-          offset: widget.offset,
-          duration: widget.duration,
-          animationStatusListener: widget.animationStatusListener,
-          child: child,
-        );
+        return FadeInLeftAnimation(preferences: preferences);
       case FlyOutAnimation.fadeInRight:
-        return FadeInRight(
-          offset: widget.offset,
-          duration: widget.duration,
-          animationStatusListener: widget.animationStatusListener,
-          child: child,
-        );
+        return FadeInRightAnimation(preferences: preferences);
       case FlyOutAnimation.fadeInDown:
-        return FadeInDown(
-          offset: widget.offset,
-          duration: widget.duration,
-          animationStatusListener: widget.animationStatusListener,
-          child: child,
-        );
+        return FadeInDownAnimation(preferences: preferences);
     }
-    return widget.button;
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_active) {
-      return _renderAnimation();
-    }
-    return IgnorePointer(
-      ignoring: true,
-      child: FadeOutRight(
-        animationStatusListener: widget.animationStatusListener,
-        offset: widget.offset,
-        duration: widget.duration,
-        child: Padding(
-          padding: EdgeInsets.only(bottom: widget.marginBottom),
-          child: widget.button,
+    return InOutAnimation(
+      key: _key,
+      child: widget.child,
+      inDefinition: _getInDefinition(),
+      outDefinition: FadeOutRightAnimation(
+        preferences: widget.preferences.copyWith(
+          duration: Duration(milliseconds: 500),
         ),
       ),
     );

@@ -28,6 +28,81 @@ import 'package:vector_math/vector_math_64.dart' as Math;
 
 import 'package:flutter_animator/flutter_animator.dart';
 
+final builder =
+    (BuildContext context, Animator animator, Widget child) => AnimatedBuilder(
+          animation: animator.controller,
+          child: child,
+          builder: (BuildContext context, Widget child) {
+            return Transform(
+              transform: Matrix4.translationValues(
+                      animator.get('translationX').value, 0.0, 0.0) *
+                  Matrix4.rotationZ(animator.get("rotationZ").value),
+              alignment: Alignment.center,
+              child: child,
+            );
+          },
+        );
+
+class FlyOutMenuButtonInAnimation extends AnimationDefinition {
+  FlyOutMenuButtonInAnimation({
+    AnimationPreferences preferences = const AnimationPreferences(),
+  }) : super(preferences: preferences);
+
+  @override
+  Widget build(BuildContext context, Animator animator, Widget child) {
+    return builder(context, animator, child);
+  }
+
+  @override
+  Map<String, TweenList> getDefinition({Size screenSize, Size widgetSize}) {
+    return {
+      "translationX": TweenList<double>(
+        [
+          TweenPercentage(percent: 0, value: 0.0, curve: Curves.easeOut),
+          TweenPercentage(percent: 25, value: -30.0, curve: Curves.easeInOut),
+          TweenPercentage(percent: 40, value: 0.0, curve: Curves.easeIn),
+        ],
+      ),
+      "rotationZ": TweenList<double>([
+        TweenPercentage(
+            percent: 0, value: Math.radians(0.0), curve: Curves.easeOut),
+        TweenPercentage(
+            percent: 25, value: Math.radians(-50.0), curve: Curves.easeInOut),
+        TweenPercentage(
+            percent: 100, value: Math.radians(1440.0), curve: Curves.easeIn),
+      ]),
+    };
+  }
+}
+
+class FlyOutMenuButtonOutAnimation extends AnimationDefinition {
+  FlyOutMenuButtonOutAnimation({
+    AnimationPreferences preferences = const AnimationPreferences(),
+  }) : super(preferences: preferences);
+
+  @override
+  Widget build(BuildContext context, Animator animator, Widget child) {
+    return builder(context, animator, child);
+  }
+
+  @override
+  Map<String, TweenList> getDefinition({Size screenSize, Size widgetSize}) {
+    return {
+      "translationX": TweenList<double>(
+        [
+          TweenPercentage(percent: 0, value: 0.0),
+        ],
+      ),
+      "rotationZ": TweenList<double>([
+        TweenPercentage(
+            percent: 0, value: Math.radians(360.0), curve: Curves.easeOut),
+        TweenPercentage(
+            percent: 100, value: Math.radians(0.0), curve: Curves.easeIn),
+      ]),
+    };
+  }
+}
+
 class FlyOutMenuButton extends StatefulWidget {
   final Function onPress;
   final IconData defaultIcon;
@@ -44,142 +119,60 @@ class FlyOutMenuButton extends StatefulWidget {
   FlyOutMenuButtonState createState() => FlyOutMenuButtonState();
 }
 
-class FlyOutMenuButtonState extends State<FlyOutMenuButton>
-    with AnimatorStateMixin {
-  Animator _activeAnimator;
+class FlyOutMenuButtonState extends State<FlyOutMenuButton> {
+  final GlobalKey<InOutAnimationState> _key = GlobalKey<InOutAnimationState>();
+  final GlobalKey<CrossFadeABState> _iconKey = GlobalKey<CrossFadeABState>();
+
+  toggle() {
+    switch (_key.currentState.status) {
+      case InOutAnimationStatus.None:
+      case InOutAnimationStatus.Out:
+        open();
+        break;
+      case InOutAnimationStatus.In:
+        close();
+        break;
+    }
+  }
 
   open() {
-    animations['close'].controller.stop();
-
-    setState(() {
-      _activeAnimator = animations['open'];
-    });
-
-    _activeAnimator.controller.forward(from: 0.0);
+    _key.currentState.animateIn();
+    _iconKey.currentState.crossToB();
   }
 
   close() {
-    animations['open'].controller.stop();
-
-    setState(() {
-      _activeAnimator = animations['close'];
-    });
-
-    _activeAnimator.controller.forward(from: 0.0);
+    _key.currentState.animateOut();
+    _iconKey.currentState.crossToA();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _activeAnimator.controller,
-      builder: (BuildContext context, Widget child) {
-        return Transform(
-          transform: Matrix4.translationValues(
-                  _activeAnimator.get('translationX').value, 0.0, 0.0) *
-              Matrix4.rotationZ(_activeAnimator.get("rotationZ").value),
-          alignment: Alignment.center,
-          child: FloatingActionButton(
-            onPressed: widget.onPress,
-            child: Stack(
-              children: <Widget>[
-                Opacity(
-                  opacity: _activeAnimator.get("iconOpacity").value,
-                  child: Icon(
-                    widget.defaultIcon,
-                    size: 30,
-                    color: Theme.of(context)
-                        .floatingActionButtonTheme
-                        .foregroundColor,
-                  ),
-                ),
-                Opacity(
-                  opacity: 1.0 - _activeAnimator.get("iconOpacity").value,
-                  child: Icon(
-                    widget.activeIcon,
-                    size: 30,
-                    color: Theme.of(context)
-                        .floatingActionButtonTheme
-                        .foregroundColor,
-                  ),
-                ),
-              ],
-            ),
+    return InOutAnimation(
+      key: _key,
+      inDefinition: FlyOutMenuButtonInAnimation(),
+      outDefinition: FlyOutMenuButtonOutAnimation(),
+      autoPlay: InOutAnimationStatus.None,
+      child: FloatingActionButton(
+        onPressed: widget.onPress,
+        child: CrossFadeAB(
+          key: _iconKey,
+          childA: Icon(
+            widget.defaultIcon,
+            size: 30,
+            color: Theme.of(context).floatingActionButtonTheme.foregroundColor,
           ),
-        );
-      },
+          childB: Icon(
+            widget.activeIcon,
+            size: 30,
+            color: Theme.of(context).floatingActionButtonTheme.foregroundColor,
+          ),
+        ),
+      ),
     );
   }
-
-  @override
-  Map<String, Animator> createAnimations() {
-    final animations = {
-      "open": Animator.sync(this, autoPlay: false)
-          .at(duration: Duration(milliseconds: 750))
-          .add(
-              key: "iconOpacity",
-              tweens: TweenList<double>([
-                TweenPercentage(percent: 25, value: 1.0),
-                TweenPercentage(percent: 75, value: 0.0)
-              ]))
-          .add(
-            key: "translationX",
-            tweens: TweenList<double>(
-              [
-                TweenPercentage(percent: 0, value: 0.0, curve: Curves.easeOut),
-                TweenPercentage(
-                    percent: 25, value: -30.0, curve: Curves.easeInOut),
-                TweenPercentage(percent: 40, value: 0.0, curve: Curves.easeIn),
-              ],
-            ),
-          )
-          .add(
-            key: "rotationZ",
-            tweens: TweenList<double>([
-              TweenPercentage(
-                  percent: 0, value: Math.radians(0.0), curve: Curves.easeOut),
-              TweenPercentage(
-                  percent: 25,
-                  value: Math.radians(-50.0),
-                  curve: Curves.easeInOut),
-              TweenPercentage(
-                  percent: 100,
-                  value: Math.radians(1440.0),
-                  curve: Curves.easeIn),
-            ]),
-          )
-          .generate(),
-      "close": Animator.sync(this, autoPlay: false)
-          .at(duration: Duration(milliseconds: 500))
-          .add(
-              key: "iconOpacity",
-              tweens: TweenList<double>([
-                TweenPercentage(percent: 25, value: 0.0),
-                TweenPercentage(percent: 75, value: 1.0)
-              ]))
-          .add(
-            key: "translationX",
-            tweens: TweenList<double>(
-              [
-                TweenPercentage(percent: 0, value: 0.0),
-              ],
-            ),
-          )
-          .add(
-            key: "rotationZ",
-            tweens: TweenList<double>([
-              TweenPercentage(
-                  percent: 0,
-                  value: Math.radians(360.0),
-                  curve: Curves.easeOut),
-              TweenPercentage(
-                  percent: 100, value: Math.radians(0.0), curve: Curves.easeIn),
-            ]),
-          )
-          .generate()
-    };
-    setState(() {
-      _activeAnimator = animations['open'];
-    });
-    return animations;
-  }
 }
+/*
+
+
+ */
+//750, 500

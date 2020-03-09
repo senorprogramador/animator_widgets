@@ -60,12 +60,13 @@ class FlyOutMenu extends StatefulWidget {
   FlyOutMenuState createState() => FlyOutMenuState();
 }
 
-class FlyOutMenuState extends State<FlyOutMenu> with SingleAnimatorStateMixin {
+class FlyOutMenuState extends State<FlyOutMenu> {
   GlobalKey<FlyOutMenuButtonState> _button = GlobalKey<FlyOutMenuButtonState>();
   List<GlobalKey<FlyOutMenuItemState>> _buttons = [];
-  OverlayEntry _overlayEntry;
+  GlobalKey<InOutAnimationState> _overlayEntryAnimator =
+      GlobalKey<InOutAnimationState>();
 
-  bool _isAnimating = false;
+  OverlayEntry _overlayEntry;
   bool _active = false;
 
   toggle() {
@@ -76,6 +77,7 @@ class FlyOutMenuState extends State<FlyOutMenu> with SingleAnimatorStateMixin {
   }
 
   open() {
+    if (_active) return;
     setState(() {
       _active = true;
       _applyActiveState();
@@ -83,6 +85,7 @@ class FlyOutMenuState extends State<FlyOutMenu> with SingleAnimatorStateMixin {
   }
 
   close() {
+    if (!_active) return;
     setState(() {
       _active = false;
       _applyActiveState();
@@ -90,19 +93,17 @@ class FlyOutMenuState extends State<FlyOutMenu> with SingleAnimatorStateMixin {
   }
 
   _applyActiveState() {
-    _isAnimating = true;
     if (_active) {
-      animation.controller.forward();
       _button.currentState.open();
       _buttons = List.generate(
           widget.buttons.length, (index) => GlobalKey<FlyOutMenuItemState>());
       this._overlayEntry = this._createOverlayEntry();
       Overlay.of(context).insert(this._overlayEntry);
     } else {
-      animation.controller.reverse();
+      _overlayEntryAnimator.currentState.animateOut();
       _button.currentState.close();
       _buttons.forEach((button) {
-        button.currentState.close();
+        button.currentState.animateOut();
       });
     }
   }
@@ -111,98 +112,76 @@ class FlyOutMenuState extends State<FlyOutMenu> with SingleAnimatorStateMixin {
     RenderBox renderBox = context.findRenderObject();
     var offset = renderBox.localToGlobal(Offset.zero);
     var screenSize = MediaQuery.of(context).size;
-    return OverlayEntry(
-      builder: (context) => AnimatedBuilder(
-        animation: animation.controller,
-        child: Stack(
-          children: <Widget>[
-            Positioned(
-              left: 0.0,
-              top: 0.0,
-              width: offset.dx + renderBox.size.width,
-              height: offset.dy - 0.5 * widget.buttonSpacing,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: widget.buttons
-                    .asMap()
-                    .map(
-                      (index, button) => MapEntry(
-                        index,
-                        FlyOutMenuItem(
-                          key: _buttons.length > index ? _buttons[index] : null,
-                          index: index,
-                          active: _active,
-                          button: button,
-                          marginBottom: widget.buttonSpacing,
+    return OverlayEntry(builder: (BuildContext context) {
+      return Stack(
+        children: <Widget>[
+          GestureDetector(
+            onTap: close,
+            child: InOutAnimation(
+              key: _overlayEntryAnimator,
+              inDefinition: FadeInAnimation(),
+              outDefinition: FadeOutAnimation(),
+              child: Container(
+                color: Colors.black.withAlpha(50),
+                width: screenSize.width,
+                height: screenSize.height,
+              ),
+              autoPlay: InOutAnimationStatus.In,
+            ),
+          ),
+          Positioned(
+            left: 0.0,
+            top: 0.0,
+            width: offset.dx + renderBox.size.width,
+            height: offset.dy - 0.5 * widget.buttonSpacing,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: widget.buttons
+                  .asMap()
+                  .map(
+                    (index, button) => MapEntry(
+                      index,
+                      FlyOutMenuItem(
+                        key: _buttons.length > index ? _buttons[index] : null,
+                        index: index,
+                        child: button,
+                        marginBottom: widget.buttonSpacing,
+                        preferences: AnimationPreferences(
                           offset: Duration(
                               milliseconds:
                                   ((index / widget.buttons.length) * 750.0)
                                       .toInt()),
                           duration: Duration(milliseconds: 500),
-                          animation: widget.animation,
                           animationStatusListener: (AnimationStatus status) {
                             if (status == AnimationStatus.completed &&
                                 index == widget.buttons.length - 1) {
-                              setState(() {
-                                _isAnimating = false;
-                              });
                               if (!_active) {
                                 this._overlayEntry.remove();
                               }
                             }
                           },
                         ),
+                        animation: widget.animation,
                       ),
-                    )
-                    .values
-                    .toList(),
-              ),
+                    ),
+                  )
+                  .values
+                  .toList(),
             ),
-          ],
-        ),
-        builder: (BuildContext context, Widget child) {
-          return GestureDetector(
-            onTap: close,
-            child: Container(
-              color: Colors.black
-                  .withAlpha(animation.get("overlayAlpha").value.toInt()),
-              width: screenSize.width,
-              height: screenSize.height,
-              child: child,
-            ),
-          );
-        },
-      ),
-    );
+          ),
+        ],
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      ignoring: _isAnimating,
-      child: FlyOutMenuButton(
-        key: _button,
-        defaultIcon: widget.defaultIcon,
-        activeIcon: widget.activeIcon,
-        onPress: toggle,
-      ),
+    return FlyOutMenuButton(
+      key: _button,
+      defaultIcon: widget.defaultIcon,
+      activeIcon: widget.activeIcon,
+      onPress: toggle,
     );
-  }
-
-  @override
-  Animator createAnimation() {
-    return Animator.sync(this, autoPlay: false)
-        .at(duration: Duration(milliseconds: 250))
-        .add(
-          key: "overlayAlpha",
-          tweens: TweenList<double>(
-            [
-              TweenPercentage(percent: 0, value: 0),
-              TweenPercentage(percent: 100, value: 50),
-            ],
-          ),
-        )
-        .generate();
   }
 }

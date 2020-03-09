@@ -1,6 +1,6 @@
 name: flutter_animator_widgets
 description: Awesome customizable animated widgets. Widgets are build with the flutter_animator package. (you should check it out ;))
-version: 1.0.0
+version: 1.0.1
 author: Sharp3dges <sharp3dges@outlook.com>
 homepage: https://github.com/sharp3dges/animator_widgets
 
@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_animator: ^1.0.04
+  flutter_animator: ^2.0.3
   vector_math: ^2.0.8
 
 dev_dependencies:

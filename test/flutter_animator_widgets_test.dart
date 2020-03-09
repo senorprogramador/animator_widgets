@@ -22,5 +22,4 @@
  * SOFTWARE.
  */
 
-void main() {
-}
+void main() {}

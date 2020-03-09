@@ -26,7 +26,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   GlobalKey<FlyOutMenuState> _flyoutMenuKey = GlobalKey<FlyOutMenuState>();
   List<String> buttonLabels =
-  List<String>.generate(4, (index) => "Button ${index + 1}");
+      List<String>.generate(4, (index) => "Button ${index + 1}");
   List<Widget> buttons;
 
   String pressedItem;
@@ -37,15 +37,15 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         buttons = buttonLabels
             .map((label) => RaisedButton(
-          color: Theme.of(context).buttonColor,
-          onPressed: () {
-            setState(() {
-              pressedItem = label;
-            });
-            _flyoutMenuKey.currentState.close();
-          },
-          child: Text(label),
-        ))
+                  color: Theme.of(context).buttonColor,
+                  onPressed: () {
+                    setState(() {
+                      pressedItem = label;
+                    });
+                    _flyoutMenuKey.currentState.close();
+                  },
+                  child: Text(label),
+                ))
             .toList();
       });
     });
