@@ -35,9 +35,9 @@ class FlyOutMenuItem extends StatefulWidget {
   final AnimationPreferences preferences;
 
   FlyOutMenuItem({
-    Key key,
-    @required this.index,
-    @required this.child,
+    Key? key,
+    required this.index,
+    required this.child,
     this.animation = FlyOutAnimation.flipperCard,
     this.marginBottom = 4.0,
     this.preferences = const AnimationPreferences(),
@@ -51,11 +51,11 @@ class FlyOutMenuItemState extends State<FlyOutMenuItem> {
   final GlobalKey<InOutAnimationState> _key = GlobalKey<InOutAnimationState>();
 
   void animateIn() {
-    _key.currentState.animateIn();
+    _key.currentState?.animateIn();
   }
 
   void animateOut() {
-    _key.currentState.animateOut();
+    _key.currentState?.animateOut();
   }
 
   AnimationDefinition _getInDefinition() {
@@ -79,10 +79,9 @@ class FlyOutMenuItemState extends State<FlyOutMenuItem> {
         return FadeInLeftAnimation(preferences: preferences);
       case FlyOutAnimation.fadeInRight:
         return FadeInRightAnimation(preferences: preferences);
-      case FlyOutAnimation.fadeInDown:
+      default:
         return FadeInDownAnimation(preferences: preferences);
     }
-    return null;
   }
 
   @override

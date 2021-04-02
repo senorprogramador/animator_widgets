@@ -30,13 +30,13 @@ import 'package:flutter_animator/flutter_animator.dart';
 
 final builder =
     (BuildContext context, Animator animator, Widget child) => AnimatedBuilder(
-          animation: animator.controller,
+          animation: animator.controller!,
           child: child,
-          builder: (BuildContext context, Widget child) {
+          builder: (BuildContext context, Widget? child) {
             return Transform(
               transform: Matrix4.translationValues(
-                      animator.get('translationX').value, 0.0, 0.0) *
-                  Matrix4.rotationZ(animator.get("rotationZ").value),
+                      animator.get('translationX')!.value, 0.0, 0.0) *
+                  Matrix4.rotationZ(animator.get("rotationZ")!.value),
               alignment: Alignment.center,
               child: child,
             );
@@ -54,7 +54,7 @@ class FlyOutMenuButtonInAnimation extends AnimationDefinition {
   }
 
   @override
-  Map<String, TweenList> getDefinition({Size screenSize, Size widgetSize}) {
+  Map<String, TweenList> getDefinition({Size? screenSize, Size? widgetSize}) {
     return {
       "translationX": TweenList<double>(
         [
@@ -86,7 +86,7 @@ class FlyOutMenuButtonOutAnimation extends AnimationDefinition {
   }
 
   @override
-  Map<String, TweenList> getDefinition({Size screenSize, Size widgetSize}) {
+  Map<String, TweenList> getDefinition({Size? screenSize, Size? widgetSize}) {
     return {
       "translationX": TweenList<double>(
         [
@@ -109,8 +109,8 @@ class FlyOutMenuButton extends StatefulWidget {
   final IconData activeIcon;
 
   FlyOutMenuButton({
-    Key key,
-    @required this.onPress,
+    Key? key,
+    required this.onPress,
     this.defaultIcon = Icons.add,
     this.activeIcon = Icons.close,
   }) : super(key: key);
@@ -124,7 +124,7 @@ class FlyOutMenuButtonState extends State<FlyOutMenuButton> {
   final GlobalKey<CrossFadeABState> _iconKey = GlobalKey<CrossFadeABState>();
 
   toggle() {
-    switch (_key.currentState.status) {
+    switch (_key.currentState!.status) {
       case InOutAnimationStatus.None:
       case InOutAnimationStatus.Out:
         open();
@@ -136,13 +136,13 @@ class FlyOutMenuButtonState extends State<FlyOutMenuButton> {
   }
 
   open() {
-    _key.currentState.animateIn();
-    _iconKey.currentState.crossToB();
+    _key.currentState!.animateIn();
+    _iconKey.currentState!.crossToB();
   }
 
   close() {
-    _key.currentState.animateOut();
-    _iconKey.currentState.crossToA();
+    _key.currentState!.animateOut();
+    _iconKey.currentState!.crossToA();
   }
 
   @override
@@ -153,7 +153,7 @@ class FlyOutMenuButtonState extends State<FlyOutMenuButton> {
       outDefinition: FlyOutMenuButtonOutAnimation(),
       autoPlay: InOutAnimationStatus.None,
       child: FloatingActionButton(
-        onPressed: widget.onPress,
+        onPressed: widget.onPress as void Function()?,
         child: CrossFadeAB(
           key: _iconKey,
           childA: Icon(

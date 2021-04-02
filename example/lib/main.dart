@@ -15,9 +15,9 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, this.title}) : super(key: key);
 
-  final String title;
+  final String? title;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -27,22 +27,24 @@ class _MyHomePageState extends State<MyHomePage> {
   GlobalKey<FlyOutMenuState> _flyoutMenuKey = GlobalKey<FlyOutMenuState>();
   List<String> buttonLabels =
       List<String>.generate(4, (index) => "Button ${index + 1}");
-  List<Widget> buttons;
+  List<Widget> buttons = [];
 
-  String pressedItem;
+  String? pressedItem;
 
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
       setState(() {
         buttons = buttonLabels
-            .map((label) => RaisedButton(
-                  color: Theme.of(context).buttonColor,
+            .map((label) => ElevatedButton(
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateColor.resolveWith(
+                          (states) => Theme.of(context).buttonColor)),
                   onPressed: () {
                     setState(() {
                       pressedItem = label;
                     });
-                    _flyoutMenuKey.currentState.close();
+                    _flyoutMenuKey.currentState!.close();
                   },
                   child: Text(label),
                 ))
@@ -56,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.title!),
       ),
       body: Center(
         child: Text(pressedItem != null

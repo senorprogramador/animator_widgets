@@ -48,8 +48,8 @@ class FlyOutMenu extends StatefulWidget {
   final IconData activeIcon;
 
   FlyOutMenu({
-    Key key,
-    @required this.buttons,
+    Key? key,
+    required this.buttons,
     this.animation = FlyOutAnimation.flipperCard,
     this.defaultIcon = Icons.add,
     this.activeIcon = Icons.close,
@@ -66,7 +66,7 @@ class FlyOutMenuState extends State<FlyOutMenu> {
   GlobalKey<InOutAnimationState> _overlayEntryAnimator =
       GlobalKey<InOutAnimationState>();
 
-  OverlayEntry _overlayEntry;
+  late OverlayEntry _overlayEntry;
   bool _active = false;
 
   toggle() {
@@ -94,22 +94,22 @@ class FlyOutMenuState extends State<FlyOutMenu> {
 
   _applyActiveState() {
     if (_active) {
-      _button.currentState.open();
+      _button.currentState!.open();
       _buttons = List.generate(
           widget.buttons.length, (index) => GlobalKey<FlyOutMenuItemState>());
       this._overlayEntry = this._createOverlayEntry();
-      Overlay.of(context).insert(this._overlayEntry);
+      Overlay.of(context)!.insert(this._overlayEntry);
     } else {
-      _overlayEntryAnimator.currentState.animateOut();
-      _button.currentState.close();
+      _overlayEntryAnimator.currentState!.animateOut();
+      _button.currentState!.close();
       _buttons.forEach((button) {
-        button.currentState.animateOut();
+        button.currentState!.animateOut();
       });
     }
   }
 
   OverlayEntry _createOverlayEntry() {
-    RenderBox renderBox = context.findRenderObject();
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
     var offset = renderBox.localToGlobal(Offset.zero);
     var screenSize = MediaQuery.of(context).size;
     return OverlayEntry(builder: (BuildContext context) {
